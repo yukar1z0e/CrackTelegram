@@ -30,3 +30,23 @@
 *.exe
 *.out
 *.app
+
+# Zip
+*.Zip
+*.zip
+*.ZIP
+
+# 7z
+*.7z
+
+# RAR
+*.RAR
+*.rar
+
+# apk
+*.apk
+
+# PDF
+*.PDF
+*.pdf
+
