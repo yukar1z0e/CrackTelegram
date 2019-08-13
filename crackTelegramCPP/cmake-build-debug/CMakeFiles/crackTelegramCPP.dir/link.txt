@@ -1,0 +1,3 @@
+"C:\Files\JetBrains\CLion 2019.2\bin\cmake\win\bin\cmake.exe" -E remove -f CMakeFiles\crackTelegramCPP.dir/objects.a
+C:\Files\MinGW\bin\ar.exe cr CMakeFiles\crackTelegramCPP.dir/objects.a @CMakeFiles\crackTelegramCPP.dir\objects1.rsp
+C:\Files\MinGW\bin\g++.exe -g   -Wl,--whole-archive CMakeFiles\crackTelegramCPP.dir/objects.a -Wl,--no-whole-archive  -o crackTelegramCPP.exe -Wl,--out-implib,libcrackTelegramCPP.dll.a -Wl,--major-image-version,0,--minor-image-version,0 @CMakeFiles\crackTelegramCPP.dir\linklibs.rsp
