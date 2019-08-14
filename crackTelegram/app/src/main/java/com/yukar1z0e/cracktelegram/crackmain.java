@@ -51,11 +51,13 @@ public class crackmain implements IXposedHookLoadPackage {
 
     public void getInfo() {
         final Class<?> TLRPC$UserClass = findClass("org.telegram.tgnet.TLRPC$User", lpparam.classLoader);
+        final Class<?> TLRPC$BotInfoClass = findClass("org.telegram.tgnet.TLRPC$BotInfo", lpparam.classLoader);
         final Class<?> TLRPC$UserFullClass = findClass("org.telegram.tgnet.TLRPC$UserFull", lpparam.classLoader);
 //        final Class<?> ContactsActivityClass=findClass("org.telegram.ui.ContactsActivity",lpparam.classLoader);
         final Class<?> AvatarDrawableClass = findClass("org.telegram.ui.Components.AvatarDrawable", lpparam.classLoader);
         final Class<?> UserObjectClass = findClass("org.telegram.messenger.UserObject", lpparam.classLoader);
         final Class<?> ProfileActivityClass = findClass("org.telegram.ui.ProfileActivity", lpparam.classLoader);
+        final Class<?> TLRPC$TL_botCommandClass = findClass("org.telegram.tgnet.TLRPC$TL_botCommand", lpparam.classLoader);
 
 //        findAndHookMethod(AvatarDrawableClass, "setInfo", TLRPC$UserClass, new XC_MethodHook() {
 //            @Override
@@ -158,7 +160,7 @@ public class crackmain implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Field aboutField = findField(TLRPC$UserFullClass, "about");
-//                Log.d("crackTelegram","about: "+aboutField.get(param.args[0]));
+                Log.d("crackTelegram", "about: " + aboutField.get(param.args[0]));
                 Field userField = findField(TLRPC$UserFullClass, "user");
                 Object userObject = userField.get(param.args[0]);
                 Field first_nameField = findField(TLRPC$UserClass, "first_name");
@@ -188,6 +190,28 @@ public class crackmain implements IXposedHookLoadPackage {
                                 + ";is mutual contact: " + mutual_contactField.get(userObject)
                                 + ";is explicit content: " + explicit_contentField.get(userObject)
                 );
+            }
+        });
+
+        findAndHookMethod(ProfileActivityClass, "setUserInfo", TLRPC$UserFullClass, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Field bot_infoField = findField(TLRPC$UserFullClass, "bot_info");
+                Object bot_infoObject = bot_infoField.get(param.args[0]);
+
+                Field descriptionField = findField(TLRPC$BotInfoClass, "description");
+                Field user_idField = findField(TLRPC$BotInfoClass, "user_id");
+
+                Field commandsField = findField(TLRPC$BotInfoClass, "commands");
+//                Object commandsObject=commandsField.get(bot_infoObject);
+//                Field TL_botCommand_commandField=findField(TLRPC$TL_botCommandClass,"command");
+//                Field TL_botCommand_descriptionField=findField(TLRPC$TL_botCommandClass,"description");
+
+                Log.d("crackTelegramBot", "user_id: " + user_idField.get(bot_infoObject)
+                        + " description: " + descriptionField.get(bot_infoObject)
+                        + " commands: " + commandsField.get(bot_infoObject));
+//                +" TL_botCommand_command: "+TL_botCommand_commandField.get(commandsObject)
+//                +" TL_botCommand_description: "+TL_botCommand_descriptionField.get(commandsObject));
             }
         });
     }
