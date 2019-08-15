@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.view.MotionEvent;
 
 import java.text.Format;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -58,6 +59,8 @@ public class crackmain implements IXposedHookLoadPackage {
         final Class<?> UserObjectClass = findClass("org.telegram.messenger.UserObject", lpparam.classLoader);
         final Class<?> ProfileActivityClass = findClass("org.telegram.ui.ProfileActivity", lpparam.classLoader);
         final Class<?> TLRPC$TL_botCommandClass = findClass("org.telegram.tgnet.TLRPC$TL_botCommand", lpparam.classLoader);
+        final Class<?> TLRPC$UserProfilePhotoClass = findClass("org.telegram.tgnet.TLRPC$UserProfilePhoto", lpparam.classLoader);
+        final Class<?> TLRPC$UserStatusClass = findClass("org.telegram.tgnet.TLRPC$UserStatus", lpparam.classLoader);
 
 //        findAndHookMethod(AvatarDrawableClass, "setInfo", TLRPC$UserClass, new XC_MethodHook() {
 //            @Override
@@ -160,7 +163,6 @@ public class crackmain implements IXposedHookLoadPackage {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Field aboutField = findField(TLRPC$UserFullClass, "about");
-                Log.d("crackTelegram", "about: " + aboutField.get(param.args[0]));
                 Field userField = findField(TLRPC$UserFullClass, "user");
                 Object userObject = userField.get(param.args[0]);
                 Field first_nameField = findField(TLRPC$UserClass, "first_name");
@@ -170,26 +172,90 @@ public class crackmain implements IXposedHookLoadPackage {
                 Field phoneField = findField(TLRPC$UserClass, "phone");
                 Field lang_codeField = findField(TLRPC$UserClass, "lang_code");
                 Field photoField = findField(TLRPC$UserClass, "photo");
+                Object photoObject = photoField.get(userObject);
+                Field photoidField = findField(TLRPC$UserProfilePhotoClass, "photo_id");
+                Field statusField = findField(TLRPC$UserClass, "status");
+                Object statusObject = statusField.get(userObject);
+                Field expiresField = findField(TLRPC$UserStatusClass, "expires");
                 Field restrictedField = findField(TLRPC$UserClass, "restricted");
                 Field restriction_reasonField = findField(TLRPC$UserClass, "restriction_reason");
-                Field statusField = findField(TLRPC$UserClass, "status");
                 Field mutual_contactField = findField(TLRPC$UserClass, "mutual_contact");
                 Field explicit_contentField = findField(TLRPC$UserClass, "explicit_content");
-                Log.d("crackTelegram",
-                        "phone: " + phoneField.get(userObject)
-                                + ";id: " + idField.get(userObject)
-                                + ";username: " + usernameField.get(userObject)
-                                + ";bio: " + aboutField.get(param.args[0])
-                                + ";status: " + statusField.get(userObject)
-                                + ";first name: " + first_nameField.get(userObject)
-                                + ";last name: " + last_nameField.get(userObject)
-                                + ";photo: " + photoField.get(userObject)
-                                + ";lang code: " + lang_codeField.get(userObject)
-                                + ";is restricted: " + restrictedField.get(userObject)
-                                + ";restriction reason: " + restriction_reasonField.get(userObject)
-                                + ";is mutual contact: " + mutual_contactField.get(userObject)
-                                + ";is explicit content: " + explicit_contentField.get(userObject)
-                );
+                Field access_hashField = findField(TLRPC$UserClass, "access_hash");
+
+                if (photoObject != null && statusObject != null) {
+                    Log.d("crackTelegram",
+                            "phone: " + phoneField.get(userObject)
+                                    + ";id: " + idField.get(userObject)
+                                    + ";username: " + usernameField.get(userObject)
+                                    + ";bio: " + aboutField.get(param.args[0])
+                                    + ";access_hash: " + access_hashField.get(userObject)
+                                    + ";status: " + statusObject
+                                    + ";status expires: " + expiresField.get(statusObject)
+                                    + ";first name: " + first_nameField.get(userObject)
+                                    + ";last name: " + last_nameField.get(userObject)
+                                    + ";photo: " + photoObject
+                                    + ";photo_id: " + photoidField.get(photoObject)
+                                    + ";lang code: " + lang_codeField.get(userObject)
+                                    + ";is restricted: " + restrictedField.get(userObject)
+                                    + ";restriction reason: " + restriction_reasonField.get(userObject)
+                                    + ";is mutual contact: " + mutual_contactField.get(userObject)
+                                    + ";is explicit content: " + explicit_contentField.get(userObject)
+                    );
+                } else if (photoObject != null) {
+                    Log.d("crackTelegram",
+                            "phone: " + phoneField.get(userObject)
+                                    + ";id: " + idField.get(userObject)
+                                    + ";username: " + usernameField.get(userObject)
+                                    + ";bio: " + aboutField.get(param.args[0])
+                                    + ";access_hash: " + access_hashField.get(userObject)
+                                    + ";status: " + statusObject
+                                    + ";first name: " + first_nameField.get(userObject)
+                                    + ";last name: " + last_nameField.get(userObject)
+                                    + ";photo: " + photoObject
+                                    + ";photo_id: " + photoidField.get(photoObject)
+                                    + ";lang code: " + lang_codeField.get(userObject)
+                                    + ";is restricted: " + restrictedField.get(userObject)
+                                    + ";restriction reason: " + restriction_reasonField.get(userObject)
+                                    + ";is mutual contact: " + mutual_contactField.get(userObject)
+                                    + ";is explicit content: " + explicit_contentField.get(userObject)
+                    );
+                } else if (statusObject != null) {
+                    Log.d("crackTelegram",
+                            "phone: " + phoneField.get(userObject)
+                                    + ";id: " + idField.get(userObject)
+                                    + ";username: " + usernameField.get(userObject)
+                                    + ";bio: " + aboutField.get(param.args[0])
+                                    + ";access_hash: " + access_hashField.get(userObject)
+                                    + ";status: " + statusObject
+                                    + ";status expires: " + expiresField.get(statusObject)
+                                    + ";first name: " + first_nameField.get(userObject)
+                                    + ";last name: " + last_nameField.get(userObject)
+                                    + ";photo: " + photoObject
+                                    + ";lang code: " + lang_codeField.get(userObject)
+                                    + ";is restricted: " + restrictedField.get(userObject)
+                                    + ";restriction reason: " + restriction_reasonField.get(userObject)
+                                    + ";is mutual contact: " + mutual_contactField.get(userObject)
+                                    + ";is explicit content: " + explicit_contentField.get(userObject)
+                    );
+                } else {
+                    Log.d("crackTelegram",
+                            "phone: " + phoneField.get(userObject)
+                                    + ";id: " + idField.get(userObject)
+                                    + ";username: " + usernameField.get(userObject)
+                                    + ";bio: " + aboutField.get(param.args[0])
+                                    + ";access_hash: " + access_hashField.get(userObject)
+                                    + ";status: " + statusObject
+                                    + ";first name: " + first_nameField.get(userObject)
+                                    + ";last name: " + last_nameField.get(userObject)
+                                    + ";photo: " + photoObject
+                                    + ";lang code: " + lang_codeField.get(userObject)
+                                    + ";is restricted: " + restrictedField.get(userObject)
+                                    + ";restriction reason: " + restriction_reasonField.get(userObject)
+                                    + ";is mutual contact: " + mutual_contactField.get(userObject)
+                                    + ";is explicit content: " + explicit_contentField.get(userObject)
+                    );
+                }
             }
         });
 
@@ -198,20 +264,23 @@ public class crackmain implements IXposedHookLoadPackage {
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Field bot_infoField = findField(TLRPC$UserFullClass, "bot_info");
                 Object bot_infoObject = bot_infoField.get(param.args[0]);
+                if (bot_infoObject != null) {
+                    Field descriptionField = findField(TLRPC$BotInfoClass, "description");
+                    Field user_idField = findField(TLRPC$BotInfoClass, "user_id");
+                    Field commandsField = findField(TLRPC$BotInfoClass, "commands");
+                    Log.d("crackTelegramBot", "user_id: " + user_idField.get(bot_infoObject)
+                            + " description: " + descriptionField.get(bot_infoObject)
+                            + " commands: " + commandsField.get(bot_infoObject));
 
-                Field descriptionField = findField(TLRPC$BotInfoClass, "description");
-                Field user_idField = findField(TLRPC$BotInfoClass, "user_id");
-
-                Field commandsField = findField(TLRPC$BotInfoClass, "commands");
-//                Object commandsObject=commandsField.get(bot_infoObject);
-//                Field TL_botCommand_commandField=findField(TLRPC$TL_botCommandClass,"command");
-//                Field TL_botCommand_descriptionField=findField(TLRPC$TL_botCommandClass,"description");
-
-                Log.d("crackTelegramBot", "user_id: " + user_idField.get(bot_infoObject)
-                        + " description: " + descriptionField.get(bot_infoObject)
-                        + " commands: " + commandsField.get(bot_infoObject));
-//                +" TL_botCommand_command: "+TL_botCommand_commandField.get(commandsObject)
-//                +" TL_botCommand_description: "+TL_botCommand_descriptionField.get(commandsObject));
+                    ArrayList<?> commands = (ArrayList<?>) commandsField.get(bot_infoObject);
+                    Field TL_botCommand_commandField = findField(TLRPC$TL_botCommandClass, "command");
+                    Field TL_botCommand_descriptionField = findField(TLRPC$TL_botCommandClass, "description");
+                    for (int i = 0; i < commands.size(); i++) {
+                        Object tmpObj = commands.get(i);
+                        Log.d("crackTelegramBot", " TL_botCommand_command: " + TL_botCommand_commandField.get(tmpObj)
+                                + " TL_botCommand_description: " + TL_botCommand_descriptionField.get(tmpObj));
+                    }
+                }
             }
         });
     }
