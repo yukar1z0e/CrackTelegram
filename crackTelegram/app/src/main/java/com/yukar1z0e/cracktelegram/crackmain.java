@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.concurrent.RunnableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +24,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
+import static de.robv.android.xposed.XposedHelpers.assetAsByteArray;
 import static de.robv.android.xposed.XposedHelpers.findAndHookConstructor;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.findField;
@@ -41,6 +43,7 @@ public class crackmain implements IXposedHookLoadPackage {
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     lpparam = loadPackageParam;
                     getInfo();
+                    getIpInfo();
                 }
             });
         }
@@ -283,5 +286,73 @@ public class crackmain implements IXposedHookLoadPackage {
                 }
             }
         });
+    }
+
+    public void getIpInfo() {
+
+        //No LogCat
+        final Class<?> ConnectionsManager$ResolvedDomainClass = findClass("org.telegram.tgnet.ConnectionsManager$ResolvedDomain", lpparam.classLoader);
+        findAndHookConstructor(ConnectionsManager$ResolvedDomainClass, ArrayList.class, long.class, new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Log.d("crackTelegram", "ArrayList a: " + param.args[0] + " long t: " + param.args[1]);
+            }
+        });
+        findAndHookMethod(ConnectionsManager$ResolvedDomainClass, "getAddress", new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Log.d("crackTelegram", "ret: " + param.getResult());
+            }
+        });
+
+        //sendRequest
+        final Class<?> ConnectionsManagerClass = findClass("org.telegram.tgnet.ConnectionsManager", lpparam.classLoader);
+        final Class<?> TLObjectClass = findClass("org.telegram.tgnet.TLObject", lpparam.classLoader);
+        final Class<?> RequestDelegateClass = findClass("org.telegram.tgnet.RequestDelegate", lpparam.classLoader);
+        final Class<?> QuickAckDelegateClass = findClass("org.telegram.tgnet.QuickAckDelegate", lpparam.classLoader);
+        final Class<?> WriteToSocketDelegateClass = findClass("org.telegram.tgnet.WriteToSocketDelegate", lpparam.classLoader);
+        final Class<?> TLRPC$TL_users_getFullUserClass = findClass("org.telegram.tgnet.TLRPC$TL_users_getFullUser", lpparam.classLoader);
+        final Class<?> TLRPC$InputUserClass = findClass("org.telegram.tgnet.TLRPC$InputUser", lpparam.classLoader);
+
+        findAndHookMethod(ConnectionsManagerClass, "sendRequest", TLObjectClass, RequestDelegateClass, QuickAckDelegateClass, WriteToSocketDelegateClass, int.class, int.class, int.class, boolean.class, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                Log.d("crackTelegram", "TLObject: " + param.args[0] + " RequestDelegate: " + param.args[1] + " QuickAckDelegate: " + param.args[2] + " WriteToSocketDelegate: " + param.args[3] + " flags: " + param.args[4] + " datacenterId: " + param.args[5] + " connetionType: " + param.args[6] + " immediate: " + param.args[7]);
+                Field idField = findField(TLRPC$TL_users_getFullUserClass, "id");
+                if (param.args[0].getClass() == TLRPC$TL_users_getFullUserClass) {
+                    Object idObject = idField.get(param.args[0]);
+
+                    Field user_idField = findField(TLRPC$InputUserClass, "user_id");
+                    Field access_hashField = findField(TLRPC$InputUserClass, "access_hash");
+                    user_idField.setAccessible(true);
+                    access_hashField.setAccessible(true);
+                    Object user_idObject = user_idField.get(idObject);
+                    Object access_hashObject = access_hashField.get(idObject);
+
+                    Log.d("crackTelegram", "user_id: " + user_idObject + " access_hash: " + access_hashObject);
+
+                    user_idField.setInt(idObject, 743160897);
+                    //Also Can Change access_hashField
+                    //access_hashField.setLong(idObject,2553254765843862308L);
+                }
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                Log.d("crackTelegram", "return requestToken: " + param.getResult());
+                Field idField = findField(TLRPC$TL_users_getFullUserClass, "id");
+                if (param.args[0].getClass() == TLRPC$TL_users_getFullUserClass) {
+                    Object idObject = idField.get(param.args[0]);
+
+                    Field user_idField = findField(TLRPC$InputUserClass, "user_id");
+                    Field access_hashField = findField(TLRPC$InputUserClass, "access_hash");
+                    Object user_idObject = user_idField.get(idObject);
+                    Object access_hashObject = access_hashField.get(idObject);
+
+                    Log.d("crackTelegram", "After Change: \n" + "user_id: " + user_idObject + " access_hash: " + access_hashObject);
+                }
+            }
+        });
+
     }
 }
